@@ -1,0 +1,85 @@
+{
+  "settings": {
+    "brandName": "Raudhatul Jannah Team",
+    "tagline": "UMROH & HAJI • SUTRISNO SAMIRA TRAVEL",
+    "navHome": "Beranda",
+    "navBlog": "Blog",
+    "navMitra": "Mitra",
+    "navGallery": "Galeri",
+    "navMaps": "Lokasi",
+    "navWA": "Hubungi",
+    "mitraTitle": "Mitra Resmi Samira Travel",
+    "mitraName": "Sutrisno",
+    "mitraAddress": "Metland Cibitung Cluster Taman Ancol Blok T6 No.3<br>Wanajaya Cibitung, Bekasi, Jawa Barat 17520",
+    "waNumber1": "0818-0608-9650",
+    "waNumber2": "0878-1154-0033",
+    "galleryTitle": "Galeri Perjalanan",
+    "brochureTitle": "Program & Brosur",
+    "brochureHeading": "Paket Umroh Plus & Haji Khusus",
+    "brochureDesc": "Dapatkan brosur digital dengan fasilitas lengkap, jadwal keberangkatan, dan promo terbaru dari mitra resmi Samira Travel.",
+    "footerText": "Samira Travel • Melayani Ibadah dengan Hati",
+    "footerAddress": "Mitra Resmi : Sutrisno (Metland Cibitung, Bekasi)",
+    "copyright": "© 2026 Samira Travel | Umroh & Haji Terpercaya",
+    "mapsTitle": "Lokasi Mitra Kami",
+    "mapsAddress": "Metland Cibitung Cluster Taman Ancol Blok T6 No.3, Wanajaya Cibitung, Bekasi",
+    "blogTitle": "Wujudkan Impian Anda dan Keluarga ke Baitullah Bersama Samira Travel",
+    "contactName": "Sutris - Samira Travel",
+    "contactWA": "0818-0608-9650",
+    "contactPhone": "0878-1154-0033"
+  },
+  "colors": {
+    "primary": "#1c84b5",
+    "primaryDark": "#0f678f",
+    "secondary": "#6ec1e4",
+    "bgLight": "#f0f9ff",
+    "textDark": "#1a3a4f",
+    "textLight": "#2c5f78",
+    "navbarBg": "rgba(255, 255, 255, 0.96)",
+    "footerBg": "#e0f0f8"
+  },
+  "mapLocation": {
+    "lat": -6.2404,
+    "lng": 107.0892,
+    "zoom": 15
+  },
+  "carousel": [
+    {
+      "id": "1",
+      "title": "Selamat Datang di Samira Travel",
+      "caption": "Perjalanan Ibadah yang Nyaman",
+      "image": "./assets/carousel/slide_1.jpg",
+      "fallback": "https://placehold.co/1920x500/1c84b5/white?text=Umroh+2025"
+    },
+    {
+      "id": "2",
+      "title": "Dapatkan Harga Terbaik",
+      "caption": "Promo Early Bird 2025",
+      "image": "./assets/carousel/slide_2.jpg",
+      "fallback": "https://placehold.co/1920x500/0b5e7e/white?text=Haji+Khusus"
+    }
+  ],
+  "gallery": [
+    {
+      "id": "1",
+      "caption": "Masjid Nabawi - Madinah",
+      "image": "./assets/gallery/gallery_1.jpg",
+      "fallback": "https://placehold.co/600x400/3a8bbb/white?text=Masjid+Nabawi"
+    },
+    {
+      "id": "2",
+      "caption": "Ka'bah - Mekah",
+      "image": "./assets/gallery/gallery_2.jpg",
+      "fallback": "https://placehold.co/600x400/2c9bcf/white?text=Ka'bah"
+    },
+    {
+      "id": "3",
+      "caption": "Jamaah Samira Travel",
+      "image": "./assets/gallery/gallery_3.jpg",
+      "fallback": "https://placehold.co/600x400/6ec1e4/white?text=Jamaah"
+    }
+  ],
+  "brochure": "./assets/brochure/brochure.jpg",
+  "brochureFallback": "https://placehold.co/320x420/bfe2f2/0d5f7e?text=Brosur+Samira",
+  "logo": "./assets/logo/office.png",
+  "logoFallback": "https://placehold.co/200x60/bfdff0/1c6c8f?text=Samira"
+}
