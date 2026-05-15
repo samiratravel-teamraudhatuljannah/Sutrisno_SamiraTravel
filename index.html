@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title id="pageTitle">Samira Travel | Umroh & Haji Terpercaya</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        const DATA_URL = './data.json';
+        const ASSETS_PATH = './assets/';
+        const FALLBACK_IMAGE = 'https://placehold.co/600x400/3a8bbb/white?text=Samira+Travel';
+        
+        const DEFAULT_DATA = {
+            settings: {
+                brandName: "Samira Travel", tagline: "UMROH & HAJI • AMANAH",
+                navHome: "Beranda", navBlog: "Blog", navMitra: "Mitra",
+                navGallery: "Galeri", navMaps: "Lokasi", navWA: "Hubungi",
+                mitraTitle: "Mitra Resmi Samira Travel", mitraName: "Sutrisno",
+                mitraAddress: "Metland Cibitung Cluster Taman Ancol Blok T6 No.3<br>Wanajaya Cibitung, Bekasi, Jawa Barat 17520",
+                waNumber1: "0818-0608-9650", waNumber2: "0878-1154-0033",
+                galleryTitle: "Galeri Perjalanan", brochureTitle: "Program & Brosur",
+                brochureHeading: "Paket Umroh Plus & Haji Khusus",
+                brochureDesc: "Dapatkan brosur digital dengan fasilitas lengkap, jadwal keberangkatan, dan promo terbaru dari mitra resmi Samira Travel.",
+                footerText: "Samira Travel • Melayani Ibadah dengan Hati",
+                footerAddress: "Mitra Resmi : Sutrisno (Metland Cibitung, Bekasi)",
+                copyright: "© 2025 Samira Travel | Umroh & Haji Terpercaya",
+                mapsTitle: "Lokasi Mitra Kami",
+                mapsAddress: "Metland Cibitung Cluster Taman Ancol Blok T6 No.3, Wanajaya Cibitung, Bekasi",
+                blogTitle: "Wujudkan Impian Anda dan Keluarga ke Baitullah Bersama Samira Travel",
+                contactName: "Sutris - Samira Travel", contactWA: "0818-0608-9650",
+                contactPhone: "0878-1154-0033"
+            },
+            colors: {
+                primary: "#1c84b5", primaryDark: "#0f678f", secondary: "#6ec1e4",
+                bgLight: "#f0f9ff", textDark: "#1a3a4f", textLight: "#2c5f78",
+                navbarBg: "rgba(255, 255, 255, 0.96)", footerBg: "#e0f0f8"
+            },
+            mapLocation: { lat: -6.2404, lng: 107.0892, zoom: 15 },
+            carousel: [
+                { id: '1', title: 'Selamat Datang di Samira Travel', caption: 'Perjalanan Ibadah yang Nyaman', image: './assets/carousel/slide_1.jpg', fallback: 'https://placehold.co/1920x500/1c84b5/white?text=Umroh+2025' },
+                { id: '2', title: 'Dapatkan Harga Terbaik', caption: 'Promo Early Bird 2025', image: './assets/carousel/slide_2.jpg', fallback: 'https://placehold.co/1920x500/0b5e7e/white?text=Haji+Khusus' }
+            ],
+            gallery: [
+                { id: '1', caption: 'Masjid Nabawi - Madinah', image: './assets/gallery/gallery_1.jpg', fallback: 'https://placehold.co/600x400/3a8bbb/white?text=Masjid+Nabawi' },
+                { id: '2', caption: "Ka'bah - Mekah", image: './assets/gallery/gallery_2.jpg', fallback: 'https://placehold.co/600x400/2c9bcf/white?text=Ka\'bah' },
+                { id: '3', caption: 'Jamaah Samira Travel', image: './assets/gallery/gallery_3.jpg', fallback: 'https://placehold.co/600x400/6ec1e4/white?text=Jamaah' }
+            ],
+            brochure: './assets/brochure/brochure.jpg',
+            brochureFallback: 'https://placehold.co/320x420/bfe2f2/0d5f7e?text=Brosur+Samira',
+            logo: './assets/logo/logo.png',
+            logoFallback: 'https://placehold.co/200x60/bfdff0/1c6c8f?text=Samira'
+        };
+        
+        let websiteData = null;
+        
+        async function loadWebsiteData() {
+            try {
+                const response = await fetch(DATA_URL + '?v=' + Date.now());
+                if (response.ok) {
+                    const jsonData = await response.json();
+                    websiteData = mergeData(DEFAULT_DATA, jsonData);
+                    localStorage.setItem('cachedWebsiteData', JSON.stringify(websiteData));
+                    console.log('✅ Data loaded from data.json');
+                    return websiteData;
+                }
+            } catch (e) { console.warn('⚠️ Cannot load data.json, using cache...'); }
+            
+            const cached = localStorage.getItem('cachedWebsiteData');
+            if (cached) { websiteData = JSON.parse(cached); console.log('✅ Data loaded from cache'); return websiteData; }
+            
+            websiteData = DEFAULT_DATA;
+            console.log('⚠️ Using default data');
+            return websiteData;
+        }
+        
+        function mergeData(defaultData, newData) {
+            return {
+                settings: { ...defaultData.settings, ...(newData.settings || {}) },
+                colors: { ...defaultData.colors, ...(newData.colors || {}) },
+                mapLocation: { ...defaultData.mapLocation, ...(newData.mapLocation || {}) },
+                carousel: newData.carousel || defaultData.carousel,
+                gallery: newData.gallery || defaultData.gallery,
+                brochure: newData.brochure || defaultData.brochure,
+                brochureFallback: newData.brochureFallback || defaultData.brochureFallback,
+                logo: newData.logo || defaultData.logo,
+                logoFallback: newData.logoFallback || defaultData.logoFallback
+            };
+        }
+        
+        function getImageUrl(imagePath, fallbackPath) {
+            if (!imagePath) return fallbackPath || FALLBACK_IMAGE;
+            return imagePath;
+        }
+    </script>
+    
+    <style id="dynamic-styles">
+        :root {
+            --primary-color: #1c84b5;
+            --primary-dark: #0f678f;
+            --secondary-color: #6ec1e4;
+            --bg-light: #f0f9ff;
+            --text-dark: #1a3a4f;
+            --text-light: #2c5f78;
+            --navbar-bg: rgba(255, 255, 255, 0.96);
+            --footer-bg: #e0f0f8;
+            --bottom-nav-height: 60px;
+            --floating-wa-size: 58px;
+        }
+    </style>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(145deg, #ffffff 0%, var(--bg-light) 100%);
+            color: var(--text-dark);
+            scroll-behavior: smooth;
+            transition: background 0.5s ease;
+        }
+
+        h1, h2, h3, .logo-text, .nav-links a, .mitra-name {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ========== DESKTOP NAVBAR (TOP) ========== */
+        .navbar-desktop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--navbar-bg);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 2px 20px rgba(0, 30, 50, 0.08);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(110, 193, 228, 0.2);
+            display: flex;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            max-width: 1280px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .logo-img {
+            height: 48px;
+            width: auto;
+            max-width: 160px;
+            object-fit: contain;
+        }
+
+        .logo-text h2 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            line-height: 1.2;
+        }
+
+        .logo-text p {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .nav-links-desktop {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .nav-links-desktop a {
+            text-decoration: none;
+            font-weight: 600;
+            color: var(--text-light);
+            transition: 0.2s;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .nav-links-desktop a:hover {
+            color: var(--primary-color);
+        }
+
+        /* Desktop WA button */
+        .wa-btn-desktop {
+            background: #25D366;
+            color: white !important;
+            padding: 8px 18px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .wa-btn-desktop:hover {
+            background: #128C7E;
+            transform: translateY(-2px);
+        }
+
+        /* ========== MOBILE TOP BAR (LOGO ONLY) ========== */
+        .mobile-top-bar {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--navbar-bg);
+            backdrop-filter: blur(12px);
+            z-index: 999;
+            padding: 8px 16px;
+            border-bottom: 1px solid rgba(110, 193, 228, 0.15);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mobile-top-bar .logo-area-mobile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mobile-top-bar .logo-img-mobile {
+            height: 32px;
+            width: auto;
+        }
+
+        .mobile-top-bar .logo-text-mobile h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .mobile-top-bar .logo-text-mobile p {
+            font-size: 0.55rem;
+            color: var(--text-light);
+        }
+
+        /* ========== MOBILE BOTTOM NAVIGATION ========== */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 -4px 20px rgba(0, 30, 50, 0.1);
+            z-index: 1000;
+            padding: 4px 0;
+            padding-bottom: max(4px, env(safe-area-inset-bottom));
+            border-top: 1px solid rgba(110, 193, 228, 0.2);
+        }
+
+        .bottom-nav-inner {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 0 8px;
+        }
+
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: var(--text-light);
+            font-size: 0.6rem;
+            font-weight: 500;
+            padding: 4px 6px;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            min-width: 50px;
+            gap: 2px;
+            position: relative;
+        }
+
+        .bottom-nav-item i {
+            font-size: 1.1rem;
+            transition: all 0.2s ease;
+        }
+
+        .bottom-nav-item span {
+            white-space: nowrap;
+            font-size: 0.55rem;
+        }
+
+        .bottom-nav-item.active {
+            color: var(--primary-color);
+        }
+
+        .bottom-nav-item.active i {
+            transform: translateY(-2px);
+        }
+
+        .bottom-nav-item.active::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 16px;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 0 0 6px 6px;
+        }
+
+        /* ========== FLOATING WHATSAPP BUTTON ========== */
+        .floating-wa {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1100;
+            width: var(--floating-wa-size);
+            height: var(--floating-wa-size);
+            background: #25D366;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            animation: waPulse 2s infinite;
+        }
+
+        .floating-wa:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 28px rgba(37, 211, 102, 0.5);
+        }
+
+        .floating-wa i {
+            color: white;
+            font-size: 1.6rem;
+        }
+
+        /* Tooltip */
+        .floating-wa::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            right: calc(100% + 12px);
+            background: #333;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            font-weight: 500;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .floating-wa:hover::before {
+            opacity: 1;
+        }
+
+        @keyframes waPulse {
+            0% { box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4); }
+            50% { box-shadow: 0 6px 30px rgba(37, 211, 102, 0.7); }
+            100% { box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4); }
+        }
+
+        /* Floating WA position adjustment for mobile */
+        @media (max-width: 992px) {
+            .floating-wa {
+                bottom: calc(var(--bottom-nav-height) + 16px);
+                right: 16px;
+            }
+            
+            .floating-wa::before {
+                display: none; /* Hide tooltip on mobile */
+            }
+        }
+
+        /* Hero Carousel */
+        .hero-carousel {
+            margin-top: 72px;
+            width: 100%;
+            height: 500px;
+            position: relative;
+        }
+
+        .swiper { width: 100%; height: 100%; }
+        .swiper-slide { position: relative; }
+        .swiper-slide img {
+            width: 100%;
+            height: 500px;
+            object-fit: cover;
+        }
+        .slide-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        .slide-overlay h3 { font-size: 2rem; margin-bottom: 10px; }
+        .swiper-button-next, .swiper-button-prev {
+            color: white;
+            background: rgba(0,0,0,0.3);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+        .swiper-pagination-bullet-active { background: var(--primary-color); }
+
+        /* Blog Section */
+        .blog-section { padding: 70px 0; background: #ffffff; }
+        .blog-card {
+            background: linear-gradient(135deg, #ffffff, var(--bg-light));
+            border-radius: 36px;
+            padding: 40px;
+            box-shadow: 0 20px 35px -8px rgba(33, 126, 166, 0.12);
+            border: 1px solid var(--secondary-color);
+        }
+        .blog-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .blog-content { font-size: 1.05rem; line-height: 1.7; color: var(--text-dark); }
+        .blog-content p { margin-bottom: 18px; }
+        .blog-highlight {
+            background: linear-gradient(120deg, var(--bg-light), transparent);
+            padding: 20px;
+            border-radius: 24px;
+            margin: 20px 0;
+            border-left: 4px solid var(--primary-color);
+        }
+        .contact-person {
+            background: var(--primary-color);
+            color: white;
+            padding: 20px;
+            border-radius: 24px;
+            text-align: center;
+            margin-top: 25px;
+        }
+        .contact-person a { color: white; text-decoration: none; font-weight: 700; }
+        .contact-person i { margin-right: 8px; }
+
+        /* Mitra Section */
+        .mitra-section { padding: 70px 0; background: var(--bg-light); }
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 48px;
+            color: var(--primary-color);
+        }
+        .section-title:after {
+            content: '';
+            display: block;
+            width: 70px;
+            height: 4px;
+            background: var(--secondary-color);
+            margin: 12px auto 0;
+            border-radius: 8px;
+        }
+        .mitra-card {
+            background: #ffffff;
+            border-radius: 36px;
+            padding: 36px 32px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 20px 35px -8px rgba(33, 126, 166, 0.12);
+            border: 1px solid var(--secondary-color);
+        }
+        .mitra-name { font-size: 1.9rem; font-weight: 700; color: var(--primary-color); margin-bottom: 10px; }
+        .mitra-address {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            margin: 24px 0;
+            background: var(--bg-light);
+            padding: 18px 20px;
+            border-radius: 28px;
+        }
+        .mitra-address i { font-size: 1.5rem; color: var(--primary-color); }
+        .wa-list { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 20px; }
+        .wa-item {
+            background: #ffffff;
+            padding: 10px 22px;
+            border-radius: 60px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid var(--secondary-color);
+        }
+        .wa-item i { font-size: 1.4rem; color: #25D366; }
+        .wa-item a { text-decoration: none; font-weight: 600; color: var(--text-light); }
+
+        /* Maps Section */
+        .maps-section { padding: 70px 0; background: #ffffff; }
+        .maps-container {
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            height: 400px;
+        }
+        #map { height: 100%; width: 100%; }
+        .maps-address { text-align: center; margin-top: 20px; color: var(--text-light); }
+
+        /* Gallery */
+        .gallery-section { padding: 60px 0 80px; background: var(--bg-light); }
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+        .gallery-card {
+            background: white;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 15px 28px rgba(28, 132, 181, 0.08);
+            transition: 0.3s ease;
+        }
+        .gallery-card:hover { transform: translateY(-6px); }
+        .gallery-card img { width: 100%; height: 230px; object-fit: cover; }
+        .gallery-card .caption { padding: 16px; text-align: center; font-weight: 600; color: var(--primary-color); }
+
+        /* Brosur Section */
+        .brochure-section { padding: 40px 0 70px; background: #ffffff; }
+        .brochure-card {
+            background: linear-gradient(115deg, var(--bg-light), #ffffff);
+            border-radius: 44px;
+            padding: 36px 32px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 32px;
+            border: 1px solid var(--secondary-color);
+        }
+        .brochure-info h3 { font-size: 1.8rem; font-weight: 700; margin-bottom: 16px; color: var(--primary-color); }
+        .btn-download {
+            background: var(--primary-color);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 60px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            margin-top: 16px;
+        }
+        .brochure-preview { max-width: 260px; border-radius: 28px; overflow: hidden; }
+        .brochure-preview img { width: 100%; height: auto; display: block; }
+
+        /* Footer */
+        .footer {
+            background: var(--footer-bg);
+            color: var(--text-dark);
+            padding: 36px 0;
+            text-align: center;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        /* Pin Modal */
+        .pin-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.2s ease;
+        }
+        .pin-modal.active { visibility: visible; opacity: 1; }
+        .pin-modal-content {
+            background: white;
+            border-radius: 32px;
+            padding: 32px 28px;
+            max-width: 320px;
+            width: 85%;
+            text-align: center;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.2);
+        }
+        .pin-input {
+            width: 100%;
+            padding: 14px;
+            font-size: 1.2rem;
+            text-align: center;
+            letter-spacing: 4px;
+            border: 2px solid var(--secondary-color);
+            border-radius: 60px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            outline: none;
+        }
+        .pin-buttons { display: flex; gap: 12px; }
+        .pin-btn { flex: 1; padding: 12px; border: none; border-radius: 60px; font-weight: 600; cursor: pointer; }
+        .pin-btn.confirm { background: var(--primary-color); color: white; }
+        .pin-btn.cancel { background: #e2e8f0; color: #475569; }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 992px) {
+            /* Sembunyikan desktop navbar */
+            .navbar-desktop { display: none; }
+            
+            /* Tampilkan mobile top bar */
+            .mobile-top-bar { display: flex; }
+            
+            /* Tampilkan bottom navigation */
+            .bottom-nav { display: block; }
+            
+            /* Adjust hero margin */
+            .hero-carousel {
+                margin-top: 50px;
+                height: 400px;
+            }
+            .swiper-slide img { height: 400px; }
+            
+            /* Padding bottom untuk bottom nav */
+            body {
+                padding-bottom: var(--bottom-nav-height);
+            }
+            
+            /* Adjust footer untuk mobile */
+            .footer {
+                padding-bottom: calc(36px + var(--bottom-nav-height));
+            }
+            
+            /* Sembunyikan tombol navigasi swiper di mobile */
+            .swiper-button-next, .swiper-button-prev { display: none; }
+        }
+
+        @media (max-width: 768px) {
+            .hero-carousel { margin-top: 48px; height: 300px; }
+            .swiper-slide img { height: 300px; }
+            .blog-title { font-size: 1.5rem; }
+            .blog-card { padding: 25px; }
+            .mitra-name { font-size: 1.5rem; }
+            .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+            .brochure-card { flex-direction: column; text-align: center; }
+            .maps-container { height: 300px; }
+            .section-title { font-size: 1.8rem; }
+            .slide-overlay h3 { font-size: 1.3rem; }
+            .slide-overlay { padding: 20px; }
+        }
+
+        @media (max-width: 480px) {
+            .hero-carousel { margin-top: 46px; height: 250px; }
+            .swiper-slide img { height: 250px; }
+            .slide-overlay h3 { font-size: 1.1rem; }
+            .blog-title { font-size: 1.2rem; }
+            .section-title { font-size: 1.4rem; }
+            .mobile-top-bar { padding: 6px 12px; }
+            .mobile-top-bar .logo-img-mobile { height: 28px; }
+            .mobile-top-bar .logo-text-mobile h2 { font-size: 0.9rem; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .blog-card, .mitra-card, .gallery-card, .brochure-card {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ========== DESKTOP NAVBAR (TOP) ========== -->
+<nav class="navbar-desktop">
+    <div class="nav-container">
+        <div class="logo-area">
+            <img id="logoImg" src="" alt="Samira Travel Logo" class="logo-img">
+            <div class="logo-text">
+                <h2 id="brandName">Samira Travel</h2>
+                <p id="taglineText">UMROH & HAJI • AMANAH</p>
+            </div>
+        </div>
+        <div class="nav-links-desktop">
+            <a href="#home" id="navHome">Beranda</a>
+            <a href="#blog" id="navBlog">Blog</a>
+            <a href="#mitra" id="navMitra">Mitra</a>
+            <a href="#gallery" id="navGallery">Galeri</a>
+            <a href="#maps" id="navMaps">Lokasi</a>
+            <a href="https://wa.me/6281806089650" target="_blank" class="wa-btn-desktop" id="navWA"><i class="fab fa-whatsapp"></i> Hubungi</a>
+        </div>
+    </div>
+</nav>
+
+<!-- ========== MOBILE TOP BAR (LOGO ONLY) ========== -->
+<div class="mobile-top-bar" id="mobileTopBar">
+    <div class="logo-area-mobile">
+        <img id="logoImgMobile" src="" alt="Samira" class="logo-img-mobile">
+        <div class="logo-text-mobile">
+            <h2 id="brandNameMobile">Samira Travel</h2>
+            <p id="taglineMobile">UMROH & HAJI</p>
+        </div>
+    </div>
+</div>
+
+<!-- ========== MOBILE BOTTOM NAVIGATION (TANPA WA) ========== -->
+<nav class="bottom-nav" id="bottomNav">
+    <div class="bottom-nav-inner">
+        <a href="#home" class="bottom-nav-item active" data-target="home">
+            <i class="fas fa-home"></i>
+            <span id="bottomNavHome">Beranda</span>
+        </a>
+        <a href="#blog" class="bottom-nav-item" data-target="blog">
+            <i class="fas fa-blog"></i>
+            <span id="bottomNavBlog">Blog</span>
+        </a>
+        <a href="#mitra" class="bottom-nav-item" data-target="mitra">
+            <i class="fas fa-handshake"></i>
+            <span id="bottomNavMitra">Mitra</span>
+        </a>
+        <a href="#gallery" class="bottom-nav-item" data-target="gallery">
+            <i class="fas fa-images"></i>
+            <span id="bottomNavGallery">Galeri</span>
+        </a>
+        <a href="#maps" class="bottom-nav-item" data-target="maps">
+            <i class="fas fa-map-marker-alt"></i>
+            <span id="bottomNavMaps">Lokasi</span>
+        </a>
+    </div>
+</nav>
+
+<!-- ========== FLOATING WHATSAPP BUTTON ========== -->
+<a href="https://wa.me/6281806089650" target="_blank" class="floating-wa" id="floatingWA" data-tooltip="Hubungi Kami" aria-label="Chat WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+</a>
+
+<!-- Hero Carousel Section -->
+<section id="home" class="hero-carousel">
+    <div class="swiper mySwiper">
+        <div class="swiper-wrapper" id="carousel-wrapper"></div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-pagination"></div>
+    </div>
+</section>
+
+<!-- Blog Section -->
+<section id="blog" class="blog-section">
+    <div class="container">
+        <div class="blog-card">
+            <h1 class="blog-title" id="blogTitle">Wujudkan Impian Anda dan Keluarga ke Baitullah Bersama Samira Travel</h1>
+            <div class="blog-content">
+                <div class="blog-highlight">
+                    <p><strong>Umroh membersamai Samira Travel</strong> — Berbekal pengalaman dan keahlian yang profesional, <strong>SAMIRA TRAVEL</strong> telah memiliki izin resmi dari pemerintah serta <strong>Rekor MURI</strong>.</p>
+                </div>
+                <p>Kami mengerti betapa pentingnya ibadah umroh bagi Anda, dan kami berkomitmen untuk memberikan pengalaman terbaik dalam perjalanan Anda menuju tanah suci.</p>
+                <p>Samira Travel telah dipercaya oleh ribuan jamaah dari berbagai daerah di Indonesia.</p>
+                <div class="contact-person">
+                    <i class="fas fa-user-tie"></i> <strong id="contactName">Sutris - Samira Travel</strong><br>
+                    <i class="fab fa-whatsapp"></i> <a href="https://wa.me/6281806089650" id="contactWA">0818-0608-9650</a> &nbsp; | &nbsp;
+                    <i class="fas fa-phone-alt"></i> <span id="contactPhone">0878-1154-0033</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Mitra Section -->
+<section id="mitra" class="mitra-section">
+    <div class="container">
+        <h2 class="section-title" id="mitraTitle">Mitra Resmi Samira Travel</h2>
+        <div class="mitra-card">
+            <div class="mitra-name"><i class="fas fa-handshake"></i> <span id="mitraName">Sutrisno</span></div>
+            <div class="mitra-address">
+                <i class="fas fa-location-dot"></i>
+                <div id="addressText"><strong>📍 Alamat Mitra</strong><br>Metland Cibitung, Bekasi</div>
+            </div>
+            <div class="wa-list">
+                <div class="wa-item"><i class="fab fa-whatsapp"></i> <a href="https://wa.me/6281806089650" target="_blank" id="wa1Link">0818-0608-9650</a></div>
+                <div class="wa-item"><i class="fab fa-whatsapp"></i> <a href="https://wa.me/6287811540033" target="_blank" id="wa2Link">0878-1154-0033</a></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Maps Section -->
+<section id="maps" class="maps-section">
+    <div class="container">
+        <h2 class="section-title" id="mapsTitle">Lokasi Mitra Kami</h2>
+        <div class="maps-container"><div id="map"></div></div>
+        <div class="maps-address" id="mapsAddress"><i class="fas fa-map-marker-alt"></i> Metland Cibitung, Bekasi</div>
+    </div>
+</section>
+
+<!-- Gallery Section -->
+<section id="gallery" class="gallery-section">
+    <div class="container">
+        <h2 class="section-title" id="galleryTitle">Galeri Perjalanan</h2>
+        <div class="gallery-grid" id="gallery-grid"></div>
+    </div>
+</section>
+
+<!-- Brosur Section -->
+<section id="brosur" class="brochure-section">
+    <div class="container">
+        <h2 class="section-title" id="brochureTitle">Program & Brosur</h2>
+        <div class="brochure-card">
+            <div class="brochure-info">
+                <h3 id="brochureHeading">Paket Umroh Plus & Haji Khusus</h3>
+                <p id="brochureDesc">Dapatkan brosur digital dengan fasilitas lengkap.</p>
+                <a href="https://wa.me/6281806089650" target="_blank" class="btn-download" id="brochureBtn"><i class="fab fa-whatsapp"></i> Minta Brosur via WA</a>
+            </div>
+            <div class="brochure-preview"><img id="brochureImg" src="" alt="Brosur"></div>
+        </div>
+    </div>
+</section>
+
+<footer class="footer" id="secretFooter">
+    <div class="container">
+        <p id="footerText"><i class="fas fa-mosque"></i> Samira Travel</p>
+        <p style="margin-top: 12px;" id="footerAddress">Mitra Resmi : Sutrisno</p>
+        <p style="margin-top: 8px; font-size: 0.75rem;" id="copyright">&copy; 2025 Samira Travel</p>
+    </div>
+</footer>
+
+<!-- Pin Modal -->
+<div id="pinModal" class="pin-modal">
+    <div class="pin-modal-content">
+        <i class="fas fa-lock"></i>
+        <h3>🔐 Akses Admin</h3>
+        <input type="password" id="pinInput" class="pin-input" placeholder="****" maxlength="4" inputmode="numeric" pattern="\d*">
+        <div class="pin-buttons">
+            <button class="pin-btn cancel" id="cancelPinBtn">Batal</button>
+            <button class="pin-btn confirm" id="confirmPinBtn">Masuk</button>
+        </div>
+        <div id="pinError" class="error-message" style="color:#dc2626;font-size:0.8rem;margin-top:12px;min-height:24px;"></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+    let swiperInstance = null;
+    let mapInstance = null;
+    
+    // ============ BOTTOM NAV ACTIVE STATE ============
+    const bottomNavItems = document.querySelectorAll('.bottom-nav-item[data-target]');
+    const sections = document.querySelectorAll('section[id]');
+    
+    function updateActiveNavItem() {
+        const scrollPosition = window.scrollY + 150;
+        
+        let currentSection = 'home';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            const sectionHeight = section.offsetHeight;
+            if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+                currentSection = section.getAttribute('id');
+            }
+        });
+        
+        bottomNavItems.forEach(item => {
+            item.classList.remove('active');
+            if (item.getAttribute('data-target') === currentSection) {
+                item.classList.add('active');
+            }
+        });
+    }
+    
+    let scrollTimeout;
+    window.addEventListener('scroll', () => {
+        if (scrollTimeout) clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(updateActiveNavItem, 100);
+    });
+    
+    // Click handler untuk bottom nav
+    bottomNavItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = item.getAttribute('data-target');
+            const target = document.getElementById(targetId);
+            if (target) {
+                const topBarHeight = document.getElementById('mobileTopBar')?.offsetHeight || 0;
+                const offset = target.offsetTop - topBarHeight;
+                
+                window.scrollTo({
+                    top: offset,
+                    behavior: 'smooth'
+                });
+                
+                bottomNavItems.forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+            }
+        });
+    });
+    
+    // ============ DESKTOP NAV SMOOTH SCROLL ============
+    document.querySelectorAll('.nav-links-desktop a[href^="#"]').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const target = document.querySelector(link.getAttribute('href'));
+            if (target) {
+                const navbarHeight = 72;
+                window.scrollTo({
+                    top: target.offsetTop - navbarHeight,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+    
+    // ============ FLOATING WA - HIDE ON SCROLL (OPTIONAL) ============
+    let lastScrollTop = 0;
+    const floatingWA = document.getElementById('floatingWA');
+    
+    window.addEventListener('scroll', () => {
+        const currentScroll = window.pageYOffset;
+        
+        if (currentScroll > lastScrollTop && currentScroll > 500) {
+            // Scroll ke bawah - sembunyikan
+            floatingWA.style.opacity = '0.4';
+            floatingWA.style.transform = 'scale(0.8)';
+        } else {
+            // Scroll ke atas - tampilkan
+            floatingWA.style.opacity = '1';
+            floatingWA.style.transform = 'scale(1)';
+        }
+        lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+    });
+    
+    // ============ ADMIN TRIGGER ============
+    let clickCount = 0;
+    let clickTimer = null;
+    
+    document.getElementById('secretFooter')?.addEventListener('click', () => {
+        clickCount++;
+        clearTimeout(clickTimer);
+        if (clickCount === 3) {
+            document.getElementById('pinModal').classList.add('active');
+            document.getElementById('pinInput').focus();
+            clickCount = 0;
+        }
+        clickTimer = setTimeout(() => clickCount = 0, 600);
+    });
+    
+    document.getElementById('confirmPinBtn')?.addEventListener('click', () => {
+        if (document.getElementById('pinInput').value === '1234') {
+            window.location.href = 'admin.html';
+        } else {
+            document.getElementById('pinError').textContent = '❌ PIN salah!';
+            document.getElementById('pinInput').value = '';
+        }
+    });
+    
+    document.getElementById('cancelPinBtn')?.addEventListener('click', () => {
+        document.getElementById('pinModal').classList.remove('active');
+    });
+    
+    document.getElementById('pinInput')?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            document.getElementById('confirmPinBtn').click();
+        }
+    });
+    
+    // ============ RENDER FUNCTIONS ============
+    function applyColors(colors) {
+        const root = document.documentElement;
+        if (colors.primary) root.style.setProperty('--primary-color', colors.primary);
+        if (colors.primaryDark) root.style.setProperty('--primary-dark', colors.primaryDark);
+        if (colors.secondary) root.style.setProperty('--secondary-color', colors.secondary);
+        if (colors.bgLight) root.style.setProperty('--bg-light', colors.bgLight);
+        if (colors.textDark) root.style.setProperty('--text-dark', colors.textDark);
+        if (colors.textLight) root.style.setProperty('--text-light', colors.textLight);
+        if (colors.navbarBg) root.style.setProperty('--navbar-bg', colors.navbarBg);
+        if (colors.footerBg) root.style.setProperty('--footer-bg', colors.footerBg);
+    }
+    
+    function applySettings(s) {
+        const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text || ''; };
+        const setHTML = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html || ''; };
+        
+        setText('brandName', s.brandName);
+        setText('taglineText', s.tagline);
+        setText('brandNameMobile', s.brandName);
+        setText('taglineMobile', (s.tagline || '').split('•')[0]);
+        setText('navHome', s.navHome);
+        setText('navBlog', s.navBlog);
+        setText('navMitra', s.navMitra);
+        setText('navGallery', s.navGallery);
+        setText('navMaps', s.navMaps);
+        setHTML('navWA', '<i class="fab fa-whatsapp"></i> ' + s.navWA);
+        setText('mitraTitle', s.mitraTitle);
+        setText('mitraName', s.mitraName);
+        setHTML('addressText', '<strong>📍 Alamat Mitra</strong><br>' + s.mitraAddress);
+        setText('galleryTitle', s.galleryTitle);
+        setText('brochureTitle', s.brochureTitle);
+        setText('brochureHeading', s.brochureHeading);
+        setText('brochureDesc', s.brochureDesc);
+        setHTML('footerText', '<i class="fas fa-mosque"></i> ' + s.footerText);
+        setText('footerAddress', s.footerAddress);
+        setText('copyright', s.copyright);
+        setText('mapsTitle', s.mapsTitle);
+        setHTML('mapsAddress', '<i class="fas fa-map-marker-alt"></i> ' + s.mapsAddress);
+        setText('blogTitle', s.blogTitle);
+        setText('contactName', s.contactName);
+        setText('contactPhone', s.contactPhone);
+        
+        // Update bottom nav labels
+        setText('bottomNavHome', s.navHome);
+        setText('bottomNavBlog', s.navBlog);
+        setText('bottomNavMitra', s.navMitra);
+        setText('bottomNavGallery', s.navGallery);
+        setText('bottomNavMaps', s.navMaps);
+        
+        // WA Links
+        const cleanWA1 = (s.waNumber1 || '').replace(/-/g, '');
+        const cleanWA2 = (s.waNumber2 || '').replace(/-/g, '');
+        const cleanContactWA = (s.contactWA || '').replace(/-/g, '');
+        
+        const wa1 = document.getElementById('wa1Link');
+        const wa2 = document.getElementById('wa2Link');
+        const contactWA = document.getElementById('contactWA');
+        const navWA = document.getElementById('navWA');
+        const brochureBtn = document.getElementById('brochureBtn');
+        const floatingWA = document.getElementById('floatingWA');
+        
+        if (wa1) { wa1.textContent = s.waNumber1; wa1.href = 'https://wa.me/' + cleanWA1; }
+        if (wa2) { wa2.textContent = s.waNumber2; wa2.href = 'https://wa.me/' + cleanWA2; }
+        if (contactWA) { contactWA.textContent = s.contactWA; contactWA.href = 'https://wa.me/' + cleanContactWA; }
+        if (navWA) navWA.parentElement.href = 'https://wa.me/' + cleanWA1;
+        if (brochureBtn) brochureBtn.href = `https://wa.me/${cleanWA1}?text=Assalamualaikum%20Saya%20mau%20minta%20brosur`;
+        if (floatingWA) {
+            floatingWA.href = 'https://wa.me/' + cleanWA1;
+            floatingWA.setAttribute('data-tooltip', s.navWA || 'Hubungi Kami');
+        }
+        
+        document.title = `${s.brandName} | ${s.tagline}`;
+    }
+    
+    function initMap(lat, lng, zoom) {
+        if (mapInstance) mapInstance.remove();
+        mapInstance = L.map('map').setView([lat, lng], zoom);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OSM', maxZoom: 19
+        }).addTo(mapInstance);
+        L.marker([lat, lng]).addTo(mapInstance).bindPopup('<b>Samira Travel</b>').openPopup();
+    }
+    
+    function renderCarousel(slides) {
+        const wrapper = document.getElementById('carousel-wrapper');
+        if (!slides || slides.length === 0) return;
+        
+        wrapper.innerHTML = slides.map(item => `
+            <div class="swiper-slide">
+                <img src="${getImageUrl(item.image, item.fallback)}" alt="${item.title}" loading="lazy" onerror="this.src='${item.fallback || FALLBACK_IMAGE}'">
+                <div class="slide-overlay">
+                    <h3>${item.title}</h3>
+                    <p>${item.caption || ''}</p>
+                </div>
+            </div>
+        `).join('');
+        
+        if (swiperInstance) swiperInstance.destroy(true, true);
+        swiperInstance = new Swiper('.mySwiper', {
+            loop: true,
+            autoplay: { delay: 4000, disableOnInteraction: false },
+            pagination: { el: '.swiper-pagination', clickable: true },
+            navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' }
+        });
+    }
+    
+    function renderGallery(photos) {
+        const grid = document.getElementById('gallery-grid');
+        if (!photos || photos.length === 0) {
+            grid.innerHTML = '<p style="text-align:center;padding:40px;">Belum ada foto galeri.</p>';
+            return;
+        }
+        grid.innerHTML = photos.map(item => `
+            <div class="gallery-card">
+                <img src="${getImageUrl(item.image, item.fallback)}" alt="${item.caption}" loading="lazy" onerror="this.src='${item.fallback || FALLBACK_IMAGE}'">
+                <div class="caption">${item.caption}</div>
+            </div>
+        `).join('');
+    }
+    
+    function renderBrochure(imagePath, fallbackPath) {
+        const img = document.getElementById('brochureImg');
+        if (img) {
+            img.src = getImageUrl(imagePath, fallbackPath);
+            img.onerror = function() { this.src = fallbackPath || FALLBACK_IMAGE; };
+        }
+    }
+    
+    function renderLogo(logoPath, fallbackPath) {
+        const logoSrc = getImageUrl(logoPath, fallbackPath);
+        const logoImg = document.getElementById('logoImg');
+        const logoImgMobile = document.getElementById('logoImgMobile');
+        if (logoImg) { logoImg.src = logoSrc; logoImg.onerror = function() { this.src = fallbackPath || FALLBACK_IMAGE; }; }
+        if (logoImgMobile) { logoImgMobile.src = logoSrc; logoImgMobile.onerror = function() { this.src = fallbackPath || FALLBACK_IMAGE; }; }
+    }
+    
+    // ============ INIT ============
+    async function initPage() {
+        const data = await loadWebsiteData();
+        
+        applyColors(data.colors);
+        applySettings(data.settings);
+        renderCarousel(data.carousel);
+        renderGallery(data.gallery);
+        renderBrochure(data.brochure, data.brochureFallback);
+        renderLogo(data.logo, data.logoFallback);
+        initMap(data.mapLocation.lat, data.mapLocation.lng, data.mapLocation.zoom);
+        
+        updateActiveNavItem();
+        
+        console.log('✅ Website Samira Travel siap!');
+        console.log('📱 Mobile Bottom Navigation + Floating WA Button');
+    }
+    
+    initPage();
+</script>
+</body>
+</html>

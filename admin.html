@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Admin Panel Samira Travel | Auto Rename Foto</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e6f4fa 100%);
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        .header {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fcff 100%);
+            backdrop-filter: blur(10px);
+            border-radius: 28px;
+            padding: 28px 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 8px 32px rgba(28, 132, 181, 0.08);
+            border: 1px solid rgba(110, 193, 228, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1c84b5, #0f678f);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .header p { color: #5a7d94; margin-top: 4px; font-size: 0.9rem; }
+
+        .auto-rename-badge {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            animation: pulse-badge 2s infinite;
+        }
+
+        @keyframes pulse-badge {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            50% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); }
+        }
+
+        .info-banner {
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            border: 2px solid #3b82f6;
+            border-radius: 20px;
+            padding: 20px 24px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .info-banner i { font-size: 1.5rem; color: #2563eb; margin-top: 2px; }
+        .info-banner-content h4 { color: #1e40af; margin-bottom: 6px; }
+        .info-banner-content p { color: #1e3a5f; font-size: 0.85rem; line-height: 1.5; }
+
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #4a6f85;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #d4eaf3;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tab-btn:hover { background: #eef7ff; border-color: #1c84b5; transform: translateY(-2px); }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #1c84b5, #0f678f);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 6px 16px rgba(28, 132, 181, 0.3);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 28px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 28px;
+            padding: 28px;
+            box-shadow: 0 8px 28px rgba(28, 132, 181, 0.06);
+            border: 1px solid rgba(110, 193, 228, 0.25);
+        }
+
+        .card h3 {
+            color: #115e7a;
+            margin-bottom: 24px;
+            padding-bottom: 14px;
+            border-bottom: 2px solid #e0f0f8;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .card h3 i { color: #1c84b5; }
+
+        .form-group { margin-bottom: 20px; }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2c5f78;
+            font-size: 0.85rem;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2eff7;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s ease;
+            background: #ffffff;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #1c84b5;
+            box-shadow: 0 0 0 3px rgba(28, 132, 181, 0.1);
+        }
+
+        textarea { resize: vertical; min-height: 80px; }
+
+        .color-input-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .color-input-group input[type="color"] {
+            width: 50px;
+            height: 50px;
+            padding: 4px;
+            border-radius: 14px;
+            cursor: pointer;
+        }
+
+        .color-input-group span {
+            flex: 1;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #4a6f85;
+            background: #f8fafc;
+            padding: 10px;
+            border-radius: 12px;
+        }
+
+        /* UPLOAD AREA */
+        .upload-area {
+            border: 3px dashed #d4eaf3;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            background: #fafdfe;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .upload-area:hover { border-color: #1c84b5; background: #eef7ff; }
+        .upload-area.dragover { border-color: #10b981; background: #f0fdf4; transform: scale(1.02); }
+        .upload-area i { font-size: 3rem; color: #1c84b5; margin-bottom: 12px; }
+        .upload-area p { color: #5a7d94; font-size: 0.9rem; }
+        .upload-area input[type="file"] { display: none; }
+
+        /* PREVIEW & RENAME INFO */
+        .preview-rename-box {
+            background: #f0fdf4;
+            border: 2px solid #10b981;
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 12px;
+            display: none;
+        }
+
+        .preview-rename-box.show { display: block; }
+        .preview-rename-box .preview-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .preview-rename-box .preview-header i { font-size: 1.5rem; color: #059669; }
+        .preview-rename-box .preview-header span { font-weight: 700; color: #065f46; }
+
+        .preview-image {
+            width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            background: #f8fafc;
+        }
+
+        .rename-info {
+            background: white;
+            border-radius: 12px;
+            padding: 14px;
+            font-family: monospace;
+        }
+
+        .rename-info .old-name { color: #ef4444; text-decoration: line-through; font-size: 0.85rem; }
+        .rename-info .new-name { color: #059669; font-weight: 700; font-size: 1rem; display: block; margin-top: 4px; }
+        .rename-info .arrow { color: #3b82f6; margin: 0 8px; }
+
+        .download-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-top: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .download-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3); }
+
+        /* ITEM LIST */
+        .item-list {
+            margin-top: 24px;
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 20px;
+        }
+
+        .item-card {
+            background: #fafdfe;
+            border-radius: 20px;
+            padding: 14px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border: 1px solid #e2eff7;
+            transition: all 0.2s;
+        }
+
+        .item-card:hover { background: #ffffff; border-color: #1c84b5; }
+        .item-card img { width: 70px; height: 70px; object-fit: cover; border-radius: 16px; }
+        .item-info { flex: 1; font-size: 0.85rem; }
+        .item-info strong { color: #115e7a; display: block; margin-bottom: 4px; }
+        .item-info .file-name {
+            display: inline-block;
+            background: #d1fae5;
+            color: #065f46;
+            padding: 2px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-family: monospace;
+        }
+
+        .delete-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .maps-preview {
+            height: 300px;
+            border-radius: 20px;
+            margin-top: 20px;
+            overflow: hidden;
+            border: 2px solid #e2eff7;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 2px solid #e0f0f8;
+        }
+
+        button {
+            background: linear-gradient(135deg, #1c84b5, #0f678f);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(28, 132, 181, 0.3); }
+        .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .btn-success { background: linear-gradient(135deg, #10b981, #059669); }
+        .btn-warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .btn-secondary { background: linear-gradient(135deg, #6b7280, #4b5563); }
+
+        .export-section {
+            background: #f0fdf4;
+            border: 2px solid #10b981;
+            border-radius: 24px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+
+        .export-section pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 60px;
+            z-index: 2000;
+            font-weight: 500;
+            font-size: 0.9rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            animation: slideInRight 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            max-width: 400px;
+        }
+
+        .toast.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #e2eff7; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #1c84b5; border-radius: 10px; }
+
+        @media (max-width: 768px) {
+            body { padding: 16px; }
+            .dashboard { grid-template-columns: 1fr; }
+            .card { padding: 20px; }
+            .tabs { gap: 8px; }
+            .tab-btn { padding: 8px 16px; font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <div>
+            <h1>📸 Samira Travel Admin</h1>
+            <p>Customize • Maps • Upload Foto (Auto Rename) • Export JSON</p>
+        </div>
+        <span class="auto-rename-badge">
+            <i class="fas fa-magic"></i> Auto Rename Aktif
+        </span>
+    </div>
+
+    <!-- Info Banner -->
+    <div class="info-banner">
+        <i class="fas fa-info-circle"></i>
+        <div class="info-banner-content">
+            <h4>🪄 Fitur Lengkap:</h4>
+            <p>
+                ✅ <strong>Customize</strong> teks, warna, navigasi • ✅ <strong>Maps</strong> atur lokasi • 
+                ✅ <strong>Upload Foto</strong> dengan auto-rename • ✅ <strong>Export data.json</strong> untuk GitHub
+            </p>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('customize')"><i class="fas fa-sliders-h"></i> Customize</button>
+        <button class="tab-btn" onclick="showTab('maps')"><i class="fas fa-map-marker-alt"></i> Maps</button>
+        <button class="tab-btn" onclick="showTab('carousel')"><i class="fas fa-images"></i> Carousel</button>
+        <button class="tab-btn" onclick="showTab('gallery')"><i class="fas fa-photo-video"></i> Galeri</button>
+        <button class="tab-btn" onclick="showTab('brochure')"><i class="fas fa-brochure"></i> Brosur & Logo</button>
+        <button class="tab-btn" onclick="showTab('export')"><i class="fas fa-download"></i> Export</button>
+    </div>
+
+    <!-- ==================== TAB CUSTOMIZE ==================== -->
+    <div id="customize-tab" class="tab-content active">
+        <div class="dashboard">
+            <div class="card">
+                <h3><i class="fas fa-font"></i> Navigasi & Brand</h3>
+                <div class="form-group"><label>🏷️ Nama Brand</label><input type="text" id="brandName" placeholder="Samira Travel"></div>
+                <div class="form-group"><label>📝 Tagline</label><input type="text" id="tagline" placeholder="UMROH & HAJI • AMANAH"></div>
+                <div class="form-group"><label>🏠 Menu Beranda</label><input type="text" id="navHome" placeholder="Beranda"></div>
+                <div class="form-group"><label>📖 Menu Blog</label><input type="text" id="navBlog" placeholder="Blog"></div>
+                <div class="form-group"><label>🤝 Menu Mitra</label><input type="text" id="navMitra" placeholder="Mitra"></div>
+                <div class="form-group"><label>🖼️ Menu Galeri</label><input type="text" id="navGallery" placeholder="Galeri"></div>
+                <div class="form-group"><label>📍 Menu Lokasi</label><input type="text" id="navMaps" placeholder="Lokasi"></div>
+                <div class="form-group"><label>📞 Tombol WA</label><input type="text" id="navWA" placeholder="Hubungi"></div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-user-tie"></i> Info Mitra & Blog</h3>
+                <div class="form-group"><label>Judul Section Mitra</label><input type="text" id="mitraTitle" placeholder="Mitra Resmi Samira Travel"></div>
+                <div class="form-group"><label>Nama Mitra</label><input type="text" id="mitraName" placeholder="Sutrisno"></div>
+                <div class="form-group"><label>Alamat Mitra</label><textarea id="mitraAddress" rows="3" placeholder="Metland Cibitung..."></textarea></div>
+                <div class="form-group"><label>📱 Nomor WA 1</label><input type="text" id="waNumber1" placeholder="0818-0608-9650"></div>
+                <div class="form-group"><label>📱 Nomor WA 2</label><input type="text" id="waNumber2" placeholder="0878-1154-0033"></div>
+                <div class="form-group"><label>📰 Judul Blog Utama</label><textarea id="blogTitle" rows="2" placeholder="Wujudkan Impian Anda..."></textarea></div>
+                <div class="form-group"><label>👤 Nama Kontak Person</label><input type="text" id="contactName" placeholder="Sutris - Samira Travel"></div>
+                <div class="form-group"><label>💬 WA Kontak Person</label><input type="text" id="contactWA" placeholder="0818-0608-9650"></div>
+                <div class="form-group"><label>📞 Telepon Kontak</label><input type="text" id="contactPhone" placeholder="0878-1154-0033"></div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-palette"></i> Warna Website</h3>
+                <div class="form-group"><label>Warna Utama</label><div class="color-input-group"><input type="color" id="primaryColor"><span id="primaryColorVal">#1c84b5</span></div></div>
+                <div class="form-group"><label>Warna Utama (Dark)</label><div class="color-input-group"><input type="color" id="primaryDarkColor"><span id="primaryDarkVal">#0f678f</span></div></div>
+                <div class="form-group"><label>Warna Sekunder</label><div class="color-input-group"><input type="color" id="secondaryColor"><span id="secondaryColorVal">#6ec1e4</span></div></div>
+                <div class="form-group"><label>Background Light</label><input type="color" id="bgLightColor" value="#f0f9ff"></div>
+                <div class="form-group"><label>Warna Teks Gelap</label><input type="color" id="textDarkColor" value="#1a3a4f"></div>
+                <div class="form-group"><label>Warna Teks Terang</label><input type="color" id="textLightColor" value="#2c5f78"></div>
+                <div class="form-group"><label>Background Navbar</label><input type="text" id="navbarBgColor" value="rgba(255,255,255,0.96)"></div>
+                <div class="form-group"><label>Background Footer</label><input type="color" id="footerBgColor" value="#e0f0f8"></div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-copyright"></i> Footer & Lainnya</h3>
+                <div class="form-group"><label>🖼️ Judul Galeri</label><input type="text" id="galleryTitle" placeholder="Galeri Perjalanan"></div>
+                <div class="form-group"><label>📄 Judul Brosur</label><input type="text" id="brochureTitle" placeholder="Program & Brosur"></div>
+                <div class="form-group"><label>📌 Heading Brosur</label><input type="text" id="brochureHeading" placeholder="Paket Umroh Plus & Haji Khusus"></div>
+                <div class="form-group"><label>📝 Deskripsi Brosur</label><textarea id="brochureDesc" rows="2" placeholder="Dapatkan brosur digital..."></textarea></div>
+                <div class="form-group"><label>📌 Teks Footer</label><input type="text" id="footerText" placeholder="Samira Travel"></div>
+                <div class="form-group"><label>📍 Alamat Footer</label><input type="text" id="footerAddress" placeholder="Mitra Resmi : Sutrisno"></div>
+                <div class="form-group"><label>© Copyright</label><input type="text" id="copyright" placeholder="© 2025 Samira Travel"></div>
+                <div class="form-group"><label>🗺️ Judul Maps</label><input type="text" id="mapsTitle" placeholder="Lokasi Mitra Kami"></div>
+                <div class="form-group"><label>📍 Alamat Maps</label><input type="text" id="mapsAddress" placeholder="Metland Cibitung, Bekasi"></div>
+            </div>
+        </div>
+        <div class="action-buttons">
+            <button onclick="saveAllSettings()"><i class="fas fa-save"></i> Simpan Semua Pengaturan</button>
+            <button onclick="resetAllSettings()" class="btn-danger"><i class="fas fa-undo-alt"></i> Reset ke Default</button>
+        </div>
+    </div>
+
+    <!-- ==================== TAB MAPS ==================== -->
+    <div id="maps-tab" class="tab-content">
+        <div class="dashboard">
+            <div class="card">
+                <h3><i class="fas fa-map-marker-alt"></i> Atur Lokasi Maps</h3>
+                <div class="form-group"><label>🌐 Latitude (Koordinat Y)</label><input type="number" id="mapLat" step="0.000001" placeholder="-6.2404"></div>
+                <div class="form-group"><label>🌐 Longitude (Koordinat X)</label><input type="number" id="mapLng" step="0.000001" placeholder="107.0892"></div>
+                <div class="form-group"><label>🔍 Level Zoom (1-19)</label><input type="number" id="mapZoom" min="1" max="19" value="15"></div>
+                <button onclick="updateMapsPreview()"><i class="fas fa-sync"></i> Update Preview & Simpan</button>
+                <div id="mapsPreview" class="maps-preview"></div>
+                <p style="margin-top: 12px; color: #5a7d94; font-size: 0.85rem;"><i class="fas fa-info-circle"></i> Klik Update untuk melihat perubahan & menyimpan</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== TAB CAROUSEL ==================== -->
+    <div id="carousel-tab" class="tab-content">
+        <div class="dashboard">
+            <div class="card">
+                <h3><i class="fas fa-plus-circle"></i> Tambah Slide Carousel</h3>
+                <div class="form-group"><label>📌 Judul Slide</label><input type="text" id="carouselTitle" placeholder="Selamat Datang di Samira Travel"></div>
+                <div class="form-group"><label>📝 Caption</label><input type="text" id="carouselCaption" placeholder="Perjalanan Ibadah yang Nyaman"></div>
+                
+                <div class="form-group">
+                    <label>🖼️ Upload Foto (Otomatis Rename)</label>
+                    <div class="upload-area" id="carouselUploadArea" onclick="document.getElementById('carouselFileInput').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p><strong>Klik atau Drag & Drop foto di sini</strong></p>
+                        <p style="font-size: 0.8rem; margin-top: 4px;">JPG, PNG, atau WebP</p>
+                        <input type="file" id="carouselFileInput" accept="image/jpeg,image/png,image/webp" onchange="handleCarouselFile(this)">
+                    </div>
+                    
+                    <div class="preview-rename-box" id="carouselPreviewBox">
+                        <div class="preview-header"><i class="fas fa-check-circle"></i><span>Foto Siap! Auto Rename Berhasil</span></div>
+                        <img id="carouselPreviewImg" class="preview-image" src="" alt="Preview">
+                        <div class="rename-info">
+                            <span class="old-name" id="carouselOldName">IMG_20240515_123456.jpg</span>
+                            <span class="arrow">→</span>
+                            <span class="new-name" id="carouselNewName">slide_3.jpg</span>
+                        </div>
+                        <button class="download-btn" onclick="downloadRenamedImage('carousel')"><i class="fas fa-download"></i> Download Foto (Sudah Rename)</button>
+                    </div>
+                </div>
+
+                <button onclick="confirmAddCarousel()"><i class="fas fa-plus"></i> Simpan ke Daftar Slide</button>
+                <div id="carouselList" class="item-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== TAB GALLERY ==================== -->
+    <div id="gallery-tab" class="tab-content">
+        <div class="dashboard">
+            <div class="card">
+                <h3><i class="fas fa-plus-circle"></i> Tambah Foto Galeri</h3>
+                <div class="form-group"><label>📝 Caption Foto</label><input type="text" id="galleryCaptionInput" placeholder="Masjid Nabawi - Madinah"></div>
+                
+                <div class="form-group">
+                    <label>🖼️ Upload Foto (Otomatis Rename)</label>
+                    <div class="upload-area" id="galleryUploadArea" onclick="document.getElementById('galleryFileInput').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p><strong>Klik atau Drag & Drop foto di sini</strong></p>
+                        <p style="font-size: 0.8rem; margin-top: 4px;">JPG, PNG, atau WebP</p>
+                        <input type="file" id="galleryFileInput" accept="image/jpeg,image/png,image/webp" onchange="handleGalleryFile(this)">
+                    </div>
+                    
+                    <div class="preview-rename-box" id="galleryPreviewBox">
+                        <div class="preview-header"><i class="fas fa-check-circle"></i><span>Foto Siap! Auto Rename Berhasil</span></div>
+                        <img id="galleryPreviewImg" class="preview-image" src="" alt="Preview">
+                        <div class="rename-info">
+                            <span class="old-name" id="galleryOldName">IMG_20240515_123456.jpg</span>
+                            <span class="arrow">→</span>
+                            <span class="new-name" id="galleryNewName">gallery_4.jpg</span>
+                        </div>
+                        <button class="download-btn" onclick="downloadRenamedImage('gallery')"><i class="fas fa-download"></i> Download Foto (Sudah Rename)</button>
+                    </div>
+                </div>
+
+                <button onclick="confirmAddGallery()"><i class="fas fa-plus"></i> Simpan ke Galeri</button>
+                <div id="galleryList" class="item-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== TAB BROCHURE & LOGO ==================== -->
+    <div id="brochure-tab" class="tab-content">
+        <div class="dashboard">
+            <div class="card">
+                <h3><i class="fas fa-brochure"></i> Brosur Travel</h3>
+                <div class="form-group">
+                    <label>🖼️ Upload Brosur (Auto Rename ke brochure.jpg)</label>
+                    <div class="upload-area" id="brochureUploadArea" onclick="document.getElementById('brochureFileInput').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p><strong>Klik atau Drag & Drop brosur</strong></p>
+                        <input type="file" id="brochureFileInput" accept="image/jpeg,image/png,image/webp" onchange="handleBrochureFile(this)">
+                    </div>
+                    <div class="preview-rename-box" id="brochurePreviewBox">
+                        <div class="preview-header"><i class="fas fa-check-circle"></i><span>Brosur Siap!</span></div>
+                        <img id="brochurePreviewImg" class="preview-image" src="" alt="Preview">
+                        <div class="rename-info">
+                            <span class="old-name" id="brochureOldName">brosur_umroh.jpg</span>
+                            <span class="arrow">→</span>
+                            <span class="new-name">brochure.jpg</span>
+                        </div>
+                        <button class="download-btn" onclick="downloadRenamedImage('brochure')"><i class="fas fa-download"></i> Download Brosur (Sudah Rename)</button>
+                    </div>
+                </div>
+                <button onclick="confirmAddBrochure()"><i class="fas fa-save"></i> Simpan Brosur</button>
+            </div>
+            
+            <div class="card">
+                <h3><i class="fas fa-image"></i> Logo Perusahaan</h3>
+                <div class="form-group">
+                    <label>🖼️ Upload Logo (Auto Rename ke logo.png)</label>
+                    <div class="upload-area" id="logoUploadArea" onclick="document.getElementById('logoFileInput').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p><strong>Klik atau Drag & Drop logo</strong></p>
+                        <input type="file" id="logoFileInput" accept="image/jpeg,image/png,image/webp" onchange="handleLogoFile(this)">
+                    </div>
+                    <div class="preview-rename-box" id="logoPreviewBox">
+                        <div class="preview-header"><i class="fas fa-check-circle"></i><span>Logo Siap!</span></div>
+                        <img id="logoPreviewImg" class="preview-image" src="" alt="Preview">
+                        <div class="rename-info">
+                            <span class="old-name" id="logoOldName">logo_samira.png</span>
+                            <span class="arrow">→</span>
+                            <span class="new-name">logo.png</span>
+                        </div>
+                        <button class="download-btn" onclick="downloadRenamedImage('logo')"><i class="fas fa-download"></i> Download Logo (Sudah Rename)</button>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button onclick="confirmAddLogo()"><i class="fas fa-save"></i> Simpan Logo</button>
+                    <button onclick="removeLogo()" class="btn-secondary"><i class="fas fa-trash"></i> Hapus Logo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== TAB EXPORT ==================== -->
+    <div id="export-tab" class="tab-content">
+        <div class="dashboard">
+            <div class="card" style="grid-column: 1 / -1;">
+                <h3><i class="fas fa-download"></i> Export data.json untuk GitHub</h3>
+                
+                <div class="export-section">
+                    <h4><i class="fas fa-file-code"></i> Preview data.json</h4>
+                    <pre id="jsonPreview">// Klik "Generate Preview" untuk melihat</pre>
+                    <div style="display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap;">
+                        <button onclick="generateJSONPreview()" class="btn-warning"><i class="fas fa-eye"></i> Generate Preview</button>
+                        <button onclick="downloadJSON()" class="btn-success"><i class="fas fa-download"></i> Download data.json</button>
+                        <button onclick="copyJSON()" class="btn-secondary"><i class="fas fa-copy"></i> Copy ke Clipboard</button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; background: #eef7ff; padding: 16px; border-radius: 20px;">
+                    <p style="font-size: 0.85rem; color: #2c5f78;">
+                        <i class="fas fa-info-circle"></i> 
+                        <strong>Langkah terakhir:</strong> Upload <code>data.json</code> + semua foto yang sudah didownload ke folder <code>assets/</code> di GitHub.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ============ MAPS ============
+    let mapPreview = null;
+
+    // ============ DATA ============
+    const defaultData = {
+        settings: {
+            brandName: "Samira Travel", tagline: "UMROH & HAJI • AMANAH",
+            navHome: "Beranda", navBlog: "Blog", navMitra: "Mitra",
+            navGallery: "Galeri", navMaps: "Lokasi", navWA: "Hubungi",
+            mitraTitle: "Mitra Resmi Samira Travel", mitraName: "Sutrisno",
+            mitraAddress: "Metland Cibitung Cluster Taman Ancol Blok T6 No.3<br>Wanajaya Cibitung, Bekasi, Jawa Barat 17520",
+            waNumber1: "0818-0608-9650", waNumber2: "0878-1154-0033",
+            galleryTitle: "Galeri Perjalanan", brochureTitle: "Program & Brosur",
+            brochureHeading: "Paket Umroh Plus & Haji Khusus",
+            brochureDesc: "Dapatkan brosur digital dengan fasilitas lengkap, jadwal keberangkatan, dan promo terbaru dari mitra resmi Samira Travel.",
+            footerText: "Samira Travel • Melayani Ibadah dengan Hati",
+            footerAddress: "Mitra Resmi : Sutrisno (Metland Cibitung, Bekasi)",
+            copyright: "© 2025 Samira Travel | Umroh & Haji Terpercaya",
+            mapsTitle: "Lokasi Mitra Kami",
+            mapsAddress: "Metland Cibitung Cluster Taman Ancol Blok T6 No.3, Wanajaya Cibitung, Bekasi",
+            blogTitle: "Wujudkan Impian Anda dan Keluarga ke Baitullah Bersama Samira Travel",
+            contactName: "Sutris - Samira Travel", contactWA: "0818-0608-9650",
+            contactPhone: "0878-1154-0033"
+        },
+        colors: {
+            primary: "#1c84b5", primaryDark: "#0f678f", secondary: "#6ec1e4",
+            bgLight: "#f0f9ff", textDark: "#1a3a4f", textLight: "#2c5f78",
+            navbarBg: "rgba(255,255,255,0.96)", footerBg: "#e0f0f8"
+        },
+        mapLocation: { lat: -6.2404, lng: 107.0892, zoom: 15 },
+        carousel: [],
+        gallery: [],
+        brochure: './assets/brochure/brochure.jpg',
+        brochureFallback: 'https://placehold.co/320x420/bfe2f2/0d5f7e?text=Brosur',
+        logo: './assets/logo/logo.png',
+        logoFallback: 'https://placehold.co/200x60/bfdff0/1c6c8f?text=Samira'
+    };
+
+    let tempFiles = { carousel: null, gallery: null, brochure: null, logo: null };
+
+    function loadData() {
+        const stored = localStorage.getItem('samiraAdminData');
+        if (stored) {
+            try { return JSON.parse(stored); } 
+            catch (e) { return JSON.parse(JSON.stringify(defaultData)); }
+        }
+        return JSON.parse(JSON.stringify(defaultData));
+    }
+
+    function saveData(data) {
+        localStorage.setItem('samiraAdminData', JSON.stringify(data));
+    }
+
+    function showToast(msg, isError = false) {
+        const existing = document.querySelector('.toast');
+        if (existing) existing.remove();
+        const div = document.createElement('div');
+        div.className = 'toast' + (isError ? ' error' : '');
+        div.innerHTML = `<i class="fas fa-${isError ? 'exclamation-triangle' : 'check-circle'}"></i> ${msg}`;
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 3000);
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[m]);
+    }
+
+    // ============ AUTO RENAME ============
+    function generateNewFileName(originalName, type) {
+        const ext = originalName.split('.').pop().toLowerCase();
+        const validExt = ['jpg', 'jpeg', 'png', 'webp'].includes(ext) ? ext : 'jpg';
+        const data = loadData();
+        
+        switch(type) {
+            case 'carousel': return `slide_${data.carousel.length + 1}.${validExt}`;
+            case 'gallery': return `gallery_${data.gallery.length + 1}.${validExt}`;
+            case 'brochure': return `brochure.${validExt}`;
+            case 'logo': return `logo.${validExt}`;
+            default: return originalName;
+        }
+    }
+
+    function handleFileUpload(file, type) {
+        if (!file) return;
+        const oldName = file.name;
+        const newName = generateNewFileName(oldName, type);
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            tempFiles[type] = { oldName, newName, base64: e.target.result, file };
+            document.getElementById(`${type}OldName`).textContent = oldName;
+            document.getElementById(`${type}NewName`).textContent = newName;
+            document.getElementById(`${type}PreviewImg`).src = e.target.result;
+            document.getElementById(`${type}PreviewBox`).classList.add('show');
+            showToast(`✅ Auto rename: ${oldName} → ${newName}`);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function handleCarouselFile(input) { if (input.files[0]) handleFileUpload(input.files[0], 'carousel'); }
+    function handleGalleryFile(input) { if (input.files[0]) handleFileUpload(input.files[0], 'gallery'); }
+    function handleBrochureFile(input) { if (input.files[0]) handleFileUpload(input.files[0], 'brochure'); }
+    function handleLogoFile(input) { if (input.files[0]) handleFileUpload(input.files[0], 'logo'); }
+
+    function downloadRenamedImage(type) {
+        const fileData = tempFiles[type];
+        if (!fileData) return showToast('❌ Upload foto dulu!', true);
+        const link = document.createElement('a');
+        link.href = fileData.base64;
+        link.download = fileData.newName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast(`📥 ${fileData.newName} didownload! Upload ke GitHub.`);
+    }
+
+    // ============ SAVE SETTINGS ============
+    function saveAllSettings() {
+        const data = loadData();
+        const fields = ['brandName','tagline','navHome','navBlog','navMitra','navGallery','navMaps','navWA',
+            'mitraTitle','mitraName','mitraAddress','waNumber1','waNumber2','galleryTitle','brochureTitle',
+            'brochureHeading','brochureDesc','footerText','footerAddress','copyright','mapsTitle','mapsAddress',
+            'blogTitle','contactName','contactWA','contactPhone'];
+        fields.forEach(f => { const el = document.getElementById(f); if (el) data.settings[f] = el.value; });
+        
+        const colorMap = { primaryColor:'primary', primaryDarkColor:'primaryDark', secondaryColor:'secondary',
+            bgLightColor:'bgLight', textDarkColor:'textDark', textLightColor:'textLight',
+            navbarBgColor:'navbarBg', footerBgColor:'footerBg' };
+        Object.entries(colorMap).forEach(([id, key]) => {
+            const el = document.getElementById(id); if (el) data.colors[key] = el.value;
+        });
+        
+        saveData(data);
+        showToast('✅ Semua pengaturan tersimpan!');
+    }
+
+    function resetAllSettings() {
+        if (confirm('⚠️ Reset semua pengaturan ke default?')) {
+            localStorage.removeItem('samiraAdminData');
+            loadFormFromData();
+            showToast('🔄 Data direset ke default');
+        }
+    }
+
+    function loadFormFromData() {
+        const data = loadData();
+        const s = data.settings;
+        const fieldMap = { brandName:s.brandName, tagline:s.tagline, navHome:s.navHome, navBlog:s.navBlog,
+            navMitra:s.navMitra, navGallery:s.navGallery, navMaps:s.navMaps, navWA:s.navWA,
+            mitraTitle:s.mitraTitle, mitraName:s.mitraName, mitraAddress:s.mitraAddress,
+            waNumber1:s.waNumber1, waNumber2:s.waNumber2, galleryTitle:s.galleryTitle,
+            brochureTitle:s.brochureTitle, brochureHeading:s.brochureHeading, brochureDesc:s.brochureDesc,
+            footerText:s.footerText, footerAddress:s.footerAddress, copyright:s.copyright,
+            mapsTitle:s.mapsTitle, mapsAddress:s.mapsAddress, blogTitle:s.blogTitle,
+            contactName:s.contactName, contactWA:s.contactWA, contactPhone:s.contactPhone };
+        Object.entries(fieldMap).forEach(([id, val]) => {
+            const el = document.getElementById(id); if (el) el.value = val || '';
+        });
+        
+        const c = data.colors;
+        document.getElementById('primaryColor').value = c.primary;
+        document.getElementById('primaryDarkColor').value = c.primaryDark;
+        document.getElementById('secondaryColor').value = c.secondary;
+        document.getElementById('bgLightColor').value = c.bgLight;
+        document.getElementById('textDarkColor').value = c.textDark;
+        document.getElementById('textLightColor').value = c.textLight;
+        document.getElementById('navbarBgColor').value = c.navbarBg;
+        document.getElementById('footerBgColor').value = c.footerBg;
+        document.getElementById('primaryColorVal').innerText = c.primary;
+        document.getElementById('primaryDarkVal').innerText = c.primaryDark;
+        document.getElementById('secondaryColorVal').innerText = c.secondary;
+        
+        document.getElementById('mapLat').value = data.mapLocation.lat;
+        document.getElementById('mapLng').value = data.mapLocation.lng;
+        document.getElementById('mapZoom').value = data.mapLocation.zoom;
+        
+        renderCarouselList();
+        renderGalleryList();
+    }
+
+    // ============ MAPS ============
+    function updateMapsPreview() {
+        const lat = parseFloat(document.getElementById('mapLat').value) || -6.2404;
+        const lng = parseFloat(document.getElementById('mapLng').value) || 107.0892;
+        const zoom = parseInt(document.getElementById('mapZoom').value) || 15;
+        
+        if (mapPreview) mapPreview.remove();
+        mapPreview = L.map('mapsPreview').setView([lat, lng], zoom);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OSM', maxZoom: 19
+        }).addTo(mapPreview);
+        L.marker([lat, lng]).addTo(mapPreview).bindPopup('<b>Samira Travel</b>').openPopup();
+        
+        const data = loadData();
+        data.mapLocation = { lat, lng, zoom };
+        saveData(data);
+        showToast('🗺️ Lokasi maps disimpan!');
+    }
+
+    // ============ CAROUSEL ============
+    function confirmAddCarousel() {
+        const title = document.getElementById('carouselTitle').value.trim();
+        const caption = document.getElementById('carouselCaption').value.trim();
+        const fileData = tempFiles.carousel;
+        if (!title) return showToast('❌ Judul harus diisi', true);
+        if (!fileData) return showToast('❌ Upload foto dulu!', true);
+        
+        const data = loadData();
+        data.carousel.push({
+            id: Date.now().toString(), title, caption,
+            image: `./assets/carousel/${fileData.newName}`,
+            fallback: 'https://placehold.co/1920x500/1c84b5/white?text=' + encodeURIComponent(title),
+            _previewBase64: fileData.base64
+        });
+        saveData(data);
+        renderCarouselList();
+        document.getElementById('carouselTitle').value = '';
+        document.getElementById('carouselCaption').value = '';
+        document.getElementById('carouselFileInput').value = '';
+        document.getElementById('carouselPreviewBox').classList.remove('show');
+        tempFiles.carousel = null;
+        showToast(`✅ Slide disimpan! Download & upload: ${fileData.newName}`);
+    }
+
+    function renderCarouselList() {
+        const data = loadData();
+        const container = document.getElementById('carouselList');
+        if (data.carousel.length === 0) {
+            container.innerHTML = '<p style="text-align:center;padding:40px;color:#8ba6b8;">Belum ada slide</p>';
+            return;
+        }
+        container.innerHTML = data.carousel.map((item, idx) => {
+            const imgSrc = item._previewBase64 || item.fallback;
+            const fileName = item.image.split('/').pop();
+            return `<div class="item-card">
+                <img src="${imgSrc}" alt="${escapeHtml(item.title)}" onerror="this.src='https://placehold.co/70x70/e2eff7/8ba6b8?text=NoImg'">
+                <div class="item-info">
+                    <strong>${escapeHtml(item.title)}</strong>
+                    <small>${escapeHtml(item.caption || '')}</small>
+                    <span class="file-name">📁 ${escapeHtml(fileName)}</span>
+                </div>
+                <button class="delete-btn" onclick="deleteCarousel(${idx})"><i class="fas fa-trash"></i></button>
+            </div>`;
+        }).join('');
+    }
+
+    function deleteCarousel(idx) {
+        if (!confirm('Hapus slide ini?')) return;
+        const data = loadData();
+        data.carousel.splice(idx, 1);
+        saveData(data);
+        renderCarouselList();
+        showToast('🗑️ Slide dihapus');
+    }
+
+    // ============ GALLERY ============
+    function confirmAddGallery() {
+        const caption = document.getElementById('galleryCaptionInput').value.trim();
+        const fileData = tempFiles.gallery;
+        if (!caption) return showToast('❌ Caption harus diisi', true);
+        if (!fileData) return showToast('❌ Upload foto dulu!', true);
+        
+        const data = loadData();
+        data.gallery.push({
+            id: Date.now().toString(), caption,
+            image: `./assets/gallery/${fileData.newName}`,
+            fallback: 'https://placehold.co/600x400/3a8bbb/white?text=' + encodeURIComponent(caption),
+            _previewBase64: fileData.base64
+        });
+        saveData(data);
+        renderGalleryList();
+        document.getElementById('galleryCaptionInput').value = '';
+        document.getElementById('galleryFileInput').value = '';
+        document.getElementById('galleryPreviewBox').classList.remove('show');
+        tempFiles.gallery = null;
+        showToast(`✅ Foto disimpan! Download & upload: ${fileData.newName}`);
+    }
+
+    function renderGalleryList() {
+        const data = loadData();
+        const container = document.getElementById('galleryList');
+        if (data.gallery.length === 0) {
+            container.innerHTML = '<p style="text-align:center;padding:40px;color:#8ba6b8;">Belum ada foto</p>';
+            return;
+        }
+        container.innerHTML = data.gallery.map((item, idx) => {
+            const imgSrc = item._previewBase64 || item.fallback;
+            const fileName = item.image.split('/').pop();
+            return `<div class="item-card">
+                <img src="${imgSrc}" alt="${escapeHtml(item.caption)}" onerror="this.src='https://placehold.co/70x70/e2eff7/8ba6b8?text=NoImg'">
+                <div class="item-info">
+                    <strong>${escapeHtml(item.caption)}</strong>
+                    <span class="file-name">📁 ${escapeHtml(fileName)}</span>
+                </div>
+                <button class="delete-btn" onclick="deleteGallery(${idx})"><i class="fas fa-trash"></i></button>
+            </div>`;
+        }).join('');
+    }
+
+    function deleteGallery(idx) {
+        if (!confirm('Hapus foto ini?')) return;
+        const data = loadData();
+        data.gallery.splice(idx, 1);
+        saveData(data);
+        renderGalleryList();
+        showToast('🗑️ Foto dihapus');
+    }
+
+    // ============ BROCHURE & LOGO ============
+    function confirmAddBrochure() {
+        const fileData = tempFiles.brochure;
+        if (!fileData) return showToast('❌ Upload brosur dulu!', true);
+        const data = loadData();
+        data.brochure = `./assets/brochure/${fileData.newName}`;
+        data._brochurePreviewBase64 = fileData.base64;
+        saveData(data);
+        showToast(`✅ Brosur disimpan! Download & upload: ${fileData.newName}`);
+    }
+
+    function confirmAddLogo() {
+        const fileData = tempFiles.logo;
+        if (!fileData) return showToast('❌ Upload logo dulu!', true);
+        const data = loadData();
+        data.logo = `./assets/logo/${fileData.newName}`;
+        data._logoPreviewBase64 = fileData.base64;
+        saveData(data);
+        showToast(`✅ Logo disimpan! Download & upload: ${fileData.newName}`);
+    }
+
+    function removeLogo() {
+        const data = loadData();
+        data.logo = '';
+        data._logoPreviewBase64 = '';
+        saveData(data);
+        showToast('🔄 Logo dihapus');
+    }
+
+    // ============ EXPORT ============
+    function cleanDataForExport(data) {
+        const cleaned = JSON.parse(JSON.stringify(data));
+        if (cleaned.carousel) cleaned.carousel = cleaned.carousel.map(({_previewBase64, ...rest}) => rest);
+        if (cleaned.gallery) cleaned.gallery = cleaned.gallery.map(({_previewBase64, ...rest}) => rest);
+        delete cleaned._brochurePreviewBase64;
+        delete cleaned._logoPreviewBase64;
+        return cleaned;
+    }
+
+    function generateJSONPreview() {
+        const data = loadData();
+        const cleaned = cleanDataForExport(data);
+        document.getElementById('jsonPreview').textContent = JSON.stringify(cleaned, null, 2);
+        showToast('✅ Preview siap!');
+    }
+
+    function downloadJSON() {
+        const data = loadData();
+        const cleaned = cleanDataForExport(data);
+        const blob = new Blob([JSON.stringify(cleaned, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'data.json';
+        a.click();
+        showToast('📥 data.json didownload!');
+    }
+
+    function copyJSON() {
+        const data = loadData();
+        const cleaned = cleanDataForExport(data);
+        navigator.clipboard.writeText(JSON.stringify(cleaned, null, 2))
+            .then(() => showToast('📋 JSON dicopy!'))
+            .catch(() => showToast('❌ Gagal copy', true));
+    }
+
+    // ============ DRAG & DROP ============
+    function setupDragDrop(areaId, type) {
+        const area = document.getElementById(areaId);
+        if (!area) return;
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            area.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); });
+        });
+        ['dragenter', 'dragover'].forEach(eventName => {
+            area.addEventListener(eventName, () => area.classList.add('dragover'));
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            area.addEventListener(eventName, () => area.classList.remove('dragover'));
+        });
+        area.addEventListener('drop', (e) => {
+            const file = e.dataTransfer.files[0];
+            if (file) handleFileUpload(file, type);
+        });
+    }
+
+    // ============ TAB NAVIGATION ============
+    function showTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        
+        const tabEl = document.getElementById(tabName + '-tab');
+        if (tabEl) tabEl.classList.add('active');
+        
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            if (btn.textContent.toLowerCase().includes(tabName)) btn.classList.add('active');
+        });
+        
+        if (tabName === 'maps') setTimeout(updateMapsPreview, 100);
+        if (tabName === 'export') generateJSONPreview();
+    }
+
+    // ============ EVENT LISTENERS ============
+    document.getElementById('primaryColor')?.addEventListener('input', function() {
+        document.getElementById('primaryColorVal').innerText = this.value;
+    });
+    document.getElementById('primaryDarkColor')?.addEventListener('input', function() {
+        document.getElementById('primaryDarkVal').innerText = this.value;
+    });
+    document.getElementById('secondaryColor')?.addEventListener('input', function() {
+        document.getElementById('secondaryColorVal').innerText = this.value;
+    });
+
+    // ============ INIT ============
+    function init() {
+        loadFormFromData();
+        renderCarouselList();
+        renderGalleryList();
+        updateMapsPreview();
+        
+        setupDragDrop('carouselUploadArea', 'carousel');
+        setupDragDrop('galleryUploadArea', 'gallery');
+        setupDragDrop('brochureUploadArea', 'brochure');
+        setupDragDrop('logoUploadArea', 'logo');
+    }
+
+    // Expose functions
+    window.showTab = showTab;
+    window.handleCarouselFile = handleCarouselFile;
+    window.handleGalleryFile = handleGalleryFile;
+    window.handleBrochureFile = handleBrochureFile;
+    window.handleLogoFile = handleLogoFile;
+    window.downloadRenamedImage = downloadRenamedImage;
+    window.confirmAddCarousel = confirmAddCarousel;
+    window.confirmAddGallery = confirmAddGallery;
+    window.confirmAddBrochure = confirmAddBrochure;
+    window.confirmAddLogo = confirmAddLogo;
+    window.removeLogo = removeLogo;
+    window.deleteCarousel = deleteCarousel;
+    window.deleteGallery = deleteGallery;
+    window.saveAllSettings = saveAllSettings;
+    window.resetAllSettings = resetAllSettings;
+    window.updateMapsPreview = updateMapsPreview;
+    window.generateJSONPreview = generateJSONPreview;
+    window.downloadJSON = downloadJSON;
+    window.copyJSON = copyJSON;
+
+    init();
+    console.log('🚀 Admin Panel Lengkap siap!');
+    console.log('✅ Customize | ✅ Maps | ✅ Carousel | ✅ Gallery | ✅ Brosur & Logo | ✅ Export');
+</script>
+</body>
+</html>
