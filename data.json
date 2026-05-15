@@ -60,22 +60,76 @@
   ],
   "gallery": [
     {
-      "id": "1",
-      "caption": "Masjid Nabawi - Madinah",
+      "id": "1778816076017",
+      "caption": "Membersamai Calon Jamaah Umroh",
       "image": "./assets/gallery/gallery_1.jpg",
-      "fallback": "https://placehold.co/600x400/3a8bbb/white?text=Masjid+Nabawi"
+      "fallback": "https://placehold.co/600x400/3a8bbb/white?text=Membersamai%20Calon%20Jamaah%20Umroh"
     },
     {
-      "id": "2",
-      "caption": "Ka'bah - Mekah",
+      "id": "1778816117295",
+      "caption": "Seminar Inspirasi Umroh",
       "image": "./assets/gallery/gallery_2.jpg",
-      "fallback": "https://placehold.co/600x400/2c9bcf/white?text=Ka'bah"
+      "fallback": "https://placehold.co/600x400/3a8bbb/white?text=Seminar%20Inspirasi%20Umroh"
     },
     {
-      "id": "3",
-      "caption": "Jamaah Samira Travel",
+      "id": "1778816157939",
+      "caption": "Manasik Umroh",
       "image": "./assets/gallery/gallery_3.jpg",
-      "fallback": "https://placehold.co/600x400/6ec1e4/white?text=Jamaah"
+      "fallback": "https://placehold.co/600x400/3a8bbb/white?text=Manasik%20Umroh"
+    },
+    {
+      "id": "1778816219165",
+      "caption": "Samira Travel",
+      "image": "./assets/gallery/gallery_4.jpg",
+      "fallback": "https://placehold.co/600x400/3a8bbb/white?text=Samira%20Travel"
+    },
+    {
+      "id": "1778816282350",
+      "caption": "Perlengkapan Umroh Samira Travel",
+      "image": "./assets/gallery/gallery_5.jpg",
+      "fallback": "https://placehold.co/600x400/3a8bbb/white?text=Perlengkapan%20Umroh%20Samira%20Travel"
+    },
+    {
+      "id": "1778816350224",
+      "caption": "Pendaftaran Umroh",
+      "image": "./assets/gallery/gallery_6.jpg",
+      "fallback": "https://placehold.co/600x400/3a8bbb/white?text=Pendaftaran%20Umroh"
+    },
+    {
+      "id": "1778816395539",
+      "caption": "3 Cara Pembayaran",
+      "image": "./assets/gallery/gallery_7.jpg",
+      "fallback": "https://placehold.co/600x400/3a8bbb/white?text=3%20Cara%20Pembayaran"
+    },
+    {
+      "id": "1778816453520",
+      "caption": "5 Pasti",
+      "image": "./assets/gallery/gallery_8.jpg",
+      "fallback": "https://placehold.co/600x400/3a8bbb/white?text=5%20Pasti"
+    },
+    {
+      "id": "1778816512853",
+      "caption": "Umroh Bersama Anak",
+      "image": "./assets/gallery/gallery_9.jpg",
+      "fallback": "https://placehold.co/600x400/3a8bbb/white?text=Umroh%20Bersama%20Anak"
+    },
+    {
+      "id": "1778816563181",
+      "caption": "Informasi Kantor Pusat",
+      "image": "./assets/gallery/gallery_10.jpg",
+      "fallback": "https://placehold.co/600x400/3a8bbb/white?text=Informasi%20Kantor%20Pusat"
+    },
+    {
+      "id": "1778816624200",
+      "caption": "Bersama CEO Samira Travel",
+      "image": "./assets/gallery/gallery_11.jpg",
+      "fallback": "https://placehold.co/600x400/3a8bbb/white?text=Bersama%20CEO%20Samira%20Travel"
+    },
+    {
+      "id": "1778816697891",
+      "caption": "Mitra Kami",
+      "image": "./assets/gallery/gallery_12.jpg",
+      "fallback": "https://placehold.co/600x400/3a8bbb/white?text=Mitra%20Kami"
     }
   ],
   "brochure": "./assets/brochure/brochure.jpg",
