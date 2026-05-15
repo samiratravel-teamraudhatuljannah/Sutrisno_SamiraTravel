@@ -588,7 +588,7 @@
         </div>
     </div>
 
-    <!-- ==================== TAB BROCHURE & LOGO ==================== -->
+    <!-- ==================== TAB BROCHURE & LOGO (SUDAH DIPERBAIKI) ==================== -->
     <div id="brochure-tab" class="tab-content">
         <div class="dashboard">
             <div class="card">
@@ -602,11 +602,11 @@
                     </div>
                     <div class="preview-rename-box" id="brochurePreviewBox">
                         <div class="preview-header"><i class="fas fa-check-circle"></i><span>Brosur Siap!</span></div>
-                        <img id="brochurePreviewImg" class="preview-image" src="" alt="Preview">
+                        <img id="brochurePreviewImg" class="preview-image" src="" alt="Preview Brosur">
                         <div class="rename-info">
                             <span class="old-name" id="brochureOldName">brosur_umroh.jpg</span>
                             <span class="arrow">→</span>
-                            <span class="new-name">brochure.jpg</span>
+                            <span class="new-name" id="brochureNewName">brochure.jpg</span>
                         </div>
                         <button class="download-btn" onclick="downloadRenamedImage('brochure')"><i class="fas fa-download"></i> Download Brosur (Sudah Rename)</button>
                     </div>
@@ -625,11 +625,11 @@
                     </div>
                     <div class="preview-rename-box" id="logoPreviewBox">
                         <div class="preview-header"><i class="fas fa-check-circle"></i><span>Logo Siap!</span></div>
-                        <img id="logoPreviewImg" class="preview-image" src="" alt="Preview">
+                        <img id="logoPreviewImg" class="preview-image" src="" alt="Preview Logo">
                         <div class="rename-info">
                             <span class="old-name" id="logoOldName">logo_samira.png</span>
                             <span class="arrow">→</span>
-                            <span class="new-name">logo.png</span>
+                            <span class="new-name" id="logoNewName">logo.png</span>
                         </div>
                         <button class="download-btn" onclick="downloadRenamedImage('logo')"><i class="fas fa-download"></i> Download Logo (Sudah Rename)</button>
                     </div>
@@ -761,10 +761,17 @@
         const reader = new FileReader();
         reader.onload = function(e) {
             tempFiles[type] = { oldName, newName, base64: e.target.result, file };
-            document.getElementById(`${type}OldName`).textContent = oldName;
-            document.getElementById(`${type}NewName`).textContent = newName;
-            document.getElementById(`${type}PreviewImg`).src = e.target.result;
-            document.getElementById(`${type}PreviewBox`).classList.add('show');
+            // Update elemen preview berdasarkan type
+            const oldNameSpan = document.getElementById(`${type}OldName`);
+            const newNameSpan = document.getElementById(`${type}NewName`);
+            const previewImg = document.getElementById(`${type}PreviewImg`);
+            const previewBox = document.getElementById(`${type}PreviewBox`);
+            
+            if (oldNameSpan) oldNameSpan.textContent = oldName;
+            if (newNameSpan) newNameSpan.textContent = newName;
+            if (previewImg) previewImg.src = e.target.result;
+            if (previewBox) previewBox.classList.add('show');
+            
             showToast(`✅ Auto rename: ${oldName} → ${newName}`);
         };
         reader.readAsDataURL(file);
